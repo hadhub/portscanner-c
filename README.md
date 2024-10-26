@@ -7,6 +7,9 @@ Simple port scanner in C, made for CTF & labs
 </p>
 
 
+[x] scan single port 
+
+
 Todo :
 - Features : Scan a port range
 - Control : Errors management
