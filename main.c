@@ -3,56 +3,41 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
-void print_manual(void) {
+void print_man(void) {
     printf("---- Manual of Simple Port TCP Scanner ----\n");
     printf("- First argument  -> IP Address\n");
-    printf("- Second argument -> Port number or range port \n");
-    printf("Example :\n");
-    printf("    Single port scan (1 port)   : ./portscanner IP 21\n");
-    printf("    Scanning port range         : ./portscanner IP 21-1024\n");
-    printf("    or\n");
-    printf("    Scanning port range         : ./portscanner IP 1 1024\n");
+    printf("eg. \n");
+    printf("    Single port scan (default port) : ./portscanner IP\n");
     printf("-----------------------------------------------------------\n");
 }
 
 int main(int argc, char* argv[]) {
- 
-    if (argc < 3) {
-        print_manual();
-        return 1; 
-    }
-    
-    if (argv[1] == NULL || argv[2] == NULL) {
+    int default_ports[]     = {21,22,53,80,88,389,443,445,3389,5985,8080};
+    int len                 = sizeof(default_ports) / sizeof(default_ports[0]);
+    const char * ip_addr    = argv[1];
+    if (argv[1] == NULL) {
         fprintf(stderr, "Error: Invalid arguments.\n");
         return 1;
     }
-    
-    struct sockaddr_in server_addr;
     int tcp_socket;
-    const char * ip_addr        = argv[1];
-    const char * port_arg       = argv[2];
-    unsigned short port         = atoi(port_arg);
-    
-    printf("[+] Scanning: %s...\n", ip_addr);
-    printf("[+] Scan is running on: %d\n", port);
-   
+    struct sockaddr_in server_addr;
     tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
-    
-    if (tcp_socket < 0) {
-        printf("Cannot create the socket\n");
-        return -1;
-    }
-    
     server_addr.sin_family      = AF_INET;
-    server_addr.sin_port        = htons(port);
     server_addr.sin_addr.s_addr = inet_addr(ip_addr);
-
-    if (connect(tcp_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        printf("Port is closed\n");
-    } else {
-        printf("Port %d open!\n",port);
+    printf("[*] Scanning: %s \n", ip_addr);
+    for (int i = 0; i < len; i++) {
+        tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
+        if (tcp_socket < 0) {
+            perror("Socket creation failed");
+            continue;
+        }
+        server_addr.sin_port = htons(default_ports[i]);
+        if (connect(tcp_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) == 0) {
+            printf("[+] Port %d open\n", default_ports[i]);
+            close(tcp_socket);
+        }
     }
-
     return 0;
 }
