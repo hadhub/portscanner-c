@@ -6,10 +6,4 @@ Simple port scanner in C, made for CTF & labs
 <strong>Project status -> WIP</strong>
 </p>
 
-
-[x] scan single port 
-
-
-Todo :
-- Features : Scan a port range
-- Control : Errors management
+Simple port scanner to scan a list of basic port for labs
